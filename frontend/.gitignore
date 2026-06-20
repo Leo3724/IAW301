@@ -1,0 +1,20 @@
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/*.log
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+.DS_Store
+<<<<<<< HEAD
+*.class
+*.log
+=======
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+scripts/seedCourses.js
+build_output.txt
+>>>>>>> 03921c7 (feat: implement full-stack LMS dashboard, course management, and student portal with authentication and API integration)

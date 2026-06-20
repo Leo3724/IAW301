@@ -1,0 +1,74 @@
+version: "3.9"
+
+# ──────────────────────────────────────────────────────────────────────
+# Coolify + Traefik Deployment Notes:
+#   • Coolify / Traefik handles SSL, domains, and external routing.
+#   • In Coolify UI, configure:
+#       - frontend service → your app domain  (port 3000)
+#       - backend service  → your api domain  (port 8080)
+#   • Set VITE_API_URL to your backend's public URL in Coolify's
+#     "Build Arguments" (e.g. https://api.yourdomain.com)
+#   • Set all other secrets in Coolify's "Environment Variables" section.
+# ──────────────────────────────────────────────────────────────────────
+
+services:
+  # ─────────────────────────────────────────
+  # Spring Boot Backend
+  # Traefik routes: https://api.yourdomain.com → port 8080
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lms-backend
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      # Database
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+      # Email
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      # Storage (AWS S3 / Cloudflare R2)
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      AWS_REGION: ${AWS_REGION:-auto}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_PUBLIC_URL: ${AWS_PUBLIC_URL}
+      # Stripe
+      STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY:-pk_test_dummy}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_dummy}
+      # Active profile
+      SPRING_PROFILES_ACTIVE: prod
+    networks:
+      - lms-network
+
+  # ─────────────────────────────────────────
+  # React Frontend (serve on port 3000)
+  # Traefik routes: https://yourdomain.com → port 3000
+  # VITE_API_URL must be set as a build arg in Coolify
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: lms-frontend
+    restart: unless-stopped
+    expose:
+      - "3000"
+    depends_on:
+      - backend
+    networks:
+      - lms-network
+
+networks:
+  lms-network:
+    driver: bridge

@@ -1,0 +1,72 @@
+server:
+  port: 8080
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
+spring:
+  application:
+    name: mini-lms
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# JWT Config
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000   # 24 hours in ms
+
+# AWS S3
+aws:
+  access-key: ${AWS_ACCESS_KEY}
+  secret-key: ${AWS_SECRET_KEY}
+  region: ${AWS_REGION:auto}
+  endpoint: ${AWS_ENDPOINT:}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET:lmsmediastore}
+    public-url: ${AWS_PUBLIC_URL:}
+
+# Stripe
+stripe:
+  publishable-key: ${STRIPE_PUBLIC_KEY}
+  secret-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: dummy
+  frontend-url: https://development.dzt6pjgfqs25v.amplifyapp.com/
+
+# Springdoc
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
