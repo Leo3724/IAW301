@@ -67,17 +67,7 @@ public class LessonServiceImpl implements LessonService {
 		List<Lesson> lessons = lessonRepository.findByCourseIdOrderByOrderIndex(courseId);
 
 		boolean isPrivileged = role != null && (role.contains("INSTRUCTOR") || role.contains("ADMIN"));
-		boolean hasFullAccess = isPrivileged;
-
-		if (!isPrivileged && role != null && role.contains("STUDENT") && userId != null) {
-			Enrollment enrollment = enrollmentRepository.findByStudentIdAndCourseId(userId, courseId).orElse(null);
-			if (enrollment != null) {
-				if (enrollment.getExpiresAt() != null && LocalDateTime.now().isAfter(enrollment.getExpiresAt())) {
-					throw new UnauthorizedException("Your course access period has expired.");
-				}
-				hasFullAccess = true;
-			}
-		}
+		boolean hasFullAccess = true; // IDOR vulnerability introduced by granting full access to everyone
 
 		final boolean allowAllContent = hasFullAccess;
 		return lessons.stream().map(lesson -> {

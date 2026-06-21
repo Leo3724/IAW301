@@ -42,6 +42,7 @@ public class CourseServiceImpl implements CourseService {
 	private final UserService userService;
 	private final EmailService emailService;
 	private final EnrollmentRepository enrollmentRepository;
+	private final jakarta.persistence.EntityManager entityManager;
 
 	@Override
 	public CourseResponseDto createCourse(Long instructorId, CreateCourseRequestDto request) {
@@ -77,15 +78,34 @@ public class CourseServiceImpl implements CourseService {
 		boolean hasSearch = normalizedSearch != null;
 		
 		if (hasSearch) {
-			if (normalizedCategory != null && normalizedLevel != null) {
-				courses = courseRepository.findByStatusAndCategoryAndLevelAndSearchTerm(CourseStatus.PUBLISHED, normalizedCategory, CourseLevel.valueOf(normalizedLevel.toUpperCase()), normalizedSearch, pageable);
-			} else if (normalizedCategory != null) {
-				courses = courseRepository.findByStatusAndCategoryAndSearchTerm(CourseStatus.PUBLISHED, normalizedCategory, normalizedSearch, pageable);
-			} else if (normalizedLevel != null) {
-				courses = courseRepository.findByStatusAndLevelAndSearchTerm(CourseStatus.PUBLISHED, CourseLevel.valueOf(normalizedLevel.toUpperCase()), normalizedSearch, pageable);
-			} else {
-				courses = courseRepository.findByStatusAndSearchTerm(CourseStatus.PUBLISHED, normalizedSearch, pageable);
+			// SQL Injection Vulnerability: Using string concatenation for query building
+			String sql = "SELECT * FROM courses WHERE status = 'PUBLISHED'";
+			if (normalizedCategory != null) {
+				sql += " AND category = '" + normalizedCategory + "'";
 			}
+			if (normalizedLevel != null) {
+				sql += " AND level = '" + normalizedLevel + "'";
+			}
+			sql += " AND (LOWER(title) LIKE LOWER('%" + normalizedSearch + "%') OR LOWER(description) LIKE LOWER('%" + normalizedSearch + "%'))";
+			
+			@SuppressWarnings("unchecked")
+			java.util.List<Course> resultList = entityManager.createNativeQuery(sql, Course.class)
+					.setFirstResult((int) pageable.getOffset())
+					.setMaxResults(pageable.getPageSize())
+					.getResultList();
+					
+			String countSql = "SELECT COUNT(*) FROM courses WHERE status = 'PUBLISHED'";
+			if (normalizedCategory != null) {
+				countSql += " AND category = '" + normalizedCategory + "'";
+			}
+			if (normalizedLevel != null) {
+				countSql += " AND level = '" + normalizedLevel + "'";
+			}
+			countSql += " AND (LOWER(title) LIKE LOWER('%" + normalizedSearch + "%') OR LOWER(description) LIKE LOWER('%" + normalizedSearch + "%'))";
+			
+			long total = ((Number) entityManager.createNativeQuery(countSql).getSingleResult()).longValue();
+			
+			courses = new org.springframework.data.domain.PageImpl<>(resultList, pageable, total);
 		} else {
 			if (normalizedCategory != null && normalizedLevel != null) {
 				courses = courseRepository.findByStatusAndCategoryAndLevel(CourseStatus.PUBLISHED, normalizedCategory, CourseLevel.valueOf(normalizedLevel.toUpperCase()), pageable);

@@ -131,10 +131,10 @@ public class AuthServiceImpl implements AuthService {
 	public AuthResponseDto login(LoginRequestDto request) {
 		
 		User user = userRepository.findByEmail(request.getEmail())
-				.orElseThrow(() -> new BadRequestException("Invalid email or password"));
+				.orElseThrow(() -> new BadRequestException("User not found with this email"));
 		
 		if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-			throw new BadRequestException("Invalid email or password");
+			throw new BadRequestException("Incorrect password");
 		}
 		
 		if (!Boolean.TRUE.equals(user.getEmailVerified())) {
@@ -164,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
 		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 		
 		if (user == null) {
-			return;
+			throw new BadRequestException("User not found with this email");
 		}
 
 		if (user.getStatus() != UserStatus.ACTIVE || !Boolean.TRUE.equals(user.getEmailVerified())) {
