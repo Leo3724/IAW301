@@ -57,6 +57,10 @@ public class User {
     private String bio;
 
     @Builder.Default
+    @Column(columnDefinition = "integer default 0")
+    private Integer credits = 0;
+
+    @Builder.Default
     @Column(name = "email_verified")
     private Boolean emailVerified = false;
 

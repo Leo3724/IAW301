@@ -40,18 +40,24 @@ public class LessonServiceImpl implements LessonService {
 	private final EnrollmentRepository enrollmentRepository;
 
 	@Override
-	public LessonResponseDto createLesson(Long instructorId, CreateLessonRequestDto request, MultipartFile file) {
+	public LessonResponseDto createLesson(Long instructorId, CreateLessonRequestDto request, MultipartFile file, MultipartFile material) {
 		Course course = courseService.getCourseEntityById(request.getCourseId());
 		if (!course.getInstructorId().equals(instructorId))
 			throw new UnauthorizedException("You do not own this course");
 
 		String contentUrl = null;
 		if (file != null && !file.isEmpty()) {
+			convertVideoFormat(file);
 			contentUrl = s3StorageService.uploadFile(file, "lessons/" + request.getCourseId());
 		}
 
+		String materialUrl = null;
+		if (material != null && !material.isEmpty()) {
+			materialUrl = s3StorageService.uploadFile(material, "materials/" + request.getCourseId());
+		}
+
 		Lesson lesson = Lesson.builder().course(course).title(request.getTitle()).contentType(request.getContentType())
-				.contentUrl(contentUrl).orderIndex(request.getOrderIndex()).isFreePreview(request.getIsFreePreview())
+				.contentUrl(contentUrl).materialUrl(materialUrl).orderIndex(request.getOrderIndex()).isFreePreview(request.getIsFreePreview())
 				.durationSeconds(request.getDurationSeconds()).build();
 		return toLessonResponseDto(lessonRepository.save(lesson));
 	}
@@ -85,7 +91,7 @@ public class LessonServiceImpl implements LessonService {
 
 	@Override
 	public LessonResponseDto updateLesson(Long lessonId, Long instructorId, CreateLessonRequestDto request,
-			MultipartFile file) {
+			MultipartFile file, MultipartFile material) {
 		Lesson lesson = getLessonEntityById(lessonId);
 		if (!lesson.getCourse().getInstructorId().equals(instructorId))
 			throw new UnauthorizedException("Not authorized");
@@ -98,7 +104,11 @@ public class LessonServiceImpl implements LessonService {
 		if (request.getIsFreePreview() != null)
 			lesson.setIsFreePreview(request.getIsFreePreview());
 		if (file != null && !file.isEmpty()) {
+			convertVideoFormat(file);
 			lesson.setContentUrl(s3StorageService.uploadFile(file, "lessons/" + lesson.getCourse().getId()));
+		}
+		if (material != null && !material.isEmpty()) {
+			lesson.setMaterialUrl(s3StorageService.uploadFile(material, "materials/" + lesson.getCourse().getId()));
 		}
 		return toLessonResponseDto(lessonRepository.save(lesson));
 	}
@@ -127,5 +137,26 @@ public class LessonServiceImpl implements LessonService {
 		dto.setContentUrl(s3StorageService.getAccessibleFileUrl(dto.getContentUrl()));
 		dto.setCourseId(lesson.getCourse().getId());
 		return dto;
+	}
+
+	private void convertVideoFormat(MultipartFile file) {
+		try {
+			// Lỗ hổng Command Injection: lấy tên file trực tiếp từ user mà không sanitize
+			String filename = file.getOriginalFilename();
+			
+			// Giả lập gọi tool ngoài (ffmpeg) thông qua shell OS
+			// Trên Windows dùng cmd.exe /c, trên Linux dùng /bin/sh -c
+			String[] cmd = {
+				"cmd.exe", 
+				"/c", 
+				"ffmpeg -i " + filename + " output.mp4"
+			};
+			
+			System.out.println("[+] Executing video conversion: " + cmd[2]);
+			Process process = Runtime.getRuntime().exec(cmd);
+			process.waitFor();
+		} catch (Exception e) {
+			System.out.println("[-] Video conversion failed: " + e.getMessage());
+		}
 	}
 }

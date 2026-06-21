@@ -60,7 +60,7 @@ const Navbar = () => {
                 </div>
                 <div className="text-left">
                   <p className="text-[#222e48] text-sm font-medium leading-tight">{user?.fullName?.split(" ")[0]}</p>
-                  <p className="text-[#576070] text-xs">{user?.role}</p>
+                  <p className="text-[#576070] text-xs">{user?.role} {user?.role === "STUDENT" && <span className="ms-1 text-green-600 font-bold">({user?.credits || 0} pts)</span>}</p>
                 </div>
                 <i className={`bi bi-chevron-down text-[#404a60] text-xs transition-transform ${profileOpen ? "rotate-180" : ""}`}></i>
               </button>
@@ -128,7 +128,7 @@ const Navbar = () => {
                     </div>
                     <div>
                       <p className="text-[#222e48] text-sm font-medium">{user?.fullName}</p>
-                      <p className="text-[#576070] text-xs">{user?.role}</p>
+                      <p className="text-[#576070] text-xs">{user?.role} {user?.role === "STUDENT" && <span className="ms-1 text-green-600 font-bold">({user?.credits || 0} pts)</span>}</p>
                     </div>
                   </div>
                   <Link to="/dashboard" onClick={() => setMenuOpen(false)}

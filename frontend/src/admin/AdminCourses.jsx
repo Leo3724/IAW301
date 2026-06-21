@@ -112,7 +112,7 @@ const AdminCourses = () => {
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${levelColor[course.level] || "bg-gray-100"}`}>{course.level}</span>
                     </td>
                     <td className="px-6 py-4 font-medium text-[#222e48]">
-                      {course.price === 0 ? <span className="text-green-600">Free</span> : `₹${course.price}`}
+                      {course.price === 0 ? <span className="text-green-600">Free</span> : `${course.price} credits`}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button

@@ -133,7 +133,7 @@ const StudentNavbar = () => {
               </div>
               <div className="hidden sm:block text-left">
                 <p className="text-[#222e48] text-sm font-semibold leading-tight">{user?.fullName?.split(" ")[0]}</p>
-                <p className="text-[#076dcd] text-xs">Student</p>
+                <p className="text-[#076dcd] text-xs">Student <span className="text-green-600 font-bold">({user?.credits || 0} pts)</span></p>
               </div>
             </button>
             {profileOpen && (

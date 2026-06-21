@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-regular-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getPublishedCourses } from "../api/courses";
 
 const LEVEL_OPTIONS = ["All", "BEGINNER", "INTERMEDIATE", "ADVANCED"];
+const CATEGORY_OPTIONS = ["All", "Programming", "Dev", "Business", "Web Dev", "Design", "Marketing", "Other"];
 
 const SkeletonCard = () => (
   <div className="bg-white p-3 rounded-xl animate-pulse">
@@ -23,6 +24,8 @@ const Course = () => {
   const [error, setError] = useState("");
   const [totalElements, setTotalElements] = useState(0);
   const [activeLevel, setActiveLevel] = useState("All");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeCategory = searchParams.get("category") || "All";
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState("Newest");
@@ -35,6 +38,7 @@ const Course = () => {
     try {
       const params = { page, size: 9 };
       if (activeLevel !== "All") params.level = activeLevel;
+      if (activeCategory !== "All") params.category = activeCategory;
       if (search.trim()) params.search = search.trim();
       const res = await getPublishedCourses(params);
       const pageData = res.data.data;
@@ -46,7 +50,7 @@ const Course = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeLevel, search, page]);
+  }, [activeLevel, activeCategory, search, page]);
 
   useEffect(() => { fetchCourses(); }, [fetchCourses]);
 
@@ -58,6 +62,17 @@ const Course = () => {
 
   const handleLevelChange = (level) => {
     setActiveLevel(level);
+    setPage(0);
+  };
+
+  const handleCategoryChange = (cat) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (cat === "All") {
+      newParams.delete("category");
+    } else {
+      newParams.set("category", cat);
+    }
+    setSearchParams(newParams);
     setPage(0);
   };
 
@@ -109,14 +124,32 @@ const Course = () => {
           </p>
         </div>
 
-        {/* Level Filter */}
-        <div className="flex flex-wrap gap-3 my-4 bg-white p-5 rounded-xl shadow-xl mb-8">
-          {LEVEL_OPTIONS.map((level) => (
-            <button key={level} onClick={() => handleLevelChange(level)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition cursor-pointer shadow-sm ${activeLevel === level ? "bg-blue-600 text-white" : "bg-[#f3f9ff] text-[#404a60] hover:bg-blue-50"}`}>
-              {level === "All" ? "All Levels" : level.charAt(0) + level.slice(1).toLowerCase()}
-            </button>
-          ))}
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-6 my-4 bg-white p-5 rounded-xl shadow-xl mb-8">
+          {/* Category Filter */}
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-[#222e48] mb-3">Categories</h3>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORY_OPTIONS.map((cat) => (
+                <button key={cat} onClick={() => handleCategoryChange(cat)}
+                  className={`px-4 py-2 rounded-full text-xs font-medium transition cursor-pointer shadow-sm ${activeCategory === cat ? "bg-[#f37739] text-white" : "bg-[#f3f9ff] text-[#404a60] hover:bg-[#fcece3]"}`}>
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Level Filter */}
+          <div className="flex-1 md:border-l border-[#ebecef] md:ps-6 pt-4 md:pt-0 border-t md:border-t-0">
+            <h3 className="text-sm font-semibold text-[#222e48] mb-3">Levels</h3>
+            <div className="flex flex-wrap gap-2">
+              {LEVEL_OPTIONS.map((level) => (
+                <button key={level} onClick={() => handleLevelChange(level)}
+                  className={`px-4 py-2 rounded-full text-xs font-medium transition cursor-pointer shadow-sm ${activeLevel === level ? "bg-blue-600 text-white" : "bg-[#f3f9ff] text-[#404a60] hover:bg-blue-50"}`}>
+                  {level === "All" ? "All Levels" : level.charAt(0) + level.slice(1).toLowerCase()}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Error */}
@@ -162,7 +195,7 @@ const Course = () => {
                   </div>
                   <div className="border-t-2 border-dotted pt-3 flex justify-between items-center">
                     <h4 className="text-[#f37739] text-xl font-semibold">
-                      {course.price === 0 || !course.price ? "Free" : `₹${course.price}`}
+                      {course.price === 0 || !course.price ? "Free" : `${course.price} credits`}
                     </h4>
                     <span className="text-[#076dcd] font-medium text-sm">
                       View Course <i className="bi bi-arrow-up-right ps-1"></i>

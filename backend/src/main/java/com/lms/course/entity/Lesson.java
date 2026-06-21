@@ -63,4 +63,7 @@ public class Lesson {
 	@CreationTimestamp
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+
+	@Column(name = "material_url")
+	private String materialUrl;
 }

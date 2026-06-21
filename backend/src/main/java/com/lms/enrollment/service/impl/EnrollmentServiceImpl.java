@@ -30,6 +30,9 @@ import com.lms.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
+import com.lms.user.entity.User;
+import com.lms.user.repository.UserRepository;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,6 +47,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 	private final UserService userService;
 	private final EmailService emailService;
 	private final LearningTimeService learningTimeService;
+	private final UserRepository userRepository;
 
 	@Override
 	public EnrollmentResponseDto enroll(Long studentId, EnrollRequestDto request) {
@@ -55,6 +59,18 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 		if (enrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId))
 			throw new BadRequestException("Already enrolled in this course");
 		Course course = courseService.getCourseEntityById(courseId); // validate course exists
+		
+		User student = userRepository.findById(studentId)
+				.orElseThrow(() -> new BadRequestException("Student not found"));
+				
+		int cost = course.getPrice() != null ? course.getPrice().intValue() : 0;
+		if (student.getCredits() < cost) {
+			throw new BadRequestException("Not enough credits to purchase this course.");
+		}
+		
+		student.setCredits(student.getCredits() - cost);
+		userRepository.save(student);
+
 		LocalDateTime enrolledAt = LocalDateTime.now();
 		LocalDateTime expiresAt = calculateExpiryDate(enrolledAt, course.getLevel());
 		Integer accessDurationDays = calculateAccessDurationDays(course.getLevel());
@@ -73,8 +89,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 		Enrollment saved = enrollmentRepository.save(enrollment);
 
 		try {
-			UserResponseDto student = userService.getUserById(studentId);
-			emailService.sendEnrollmentEmail(student.getEmail(), student.getFullName(), course.getTitle());
+			UserResponseDto studentDto = userService.getUserById(studentId);
+			emailService.sendEnrollmentEmail(studentDto.getEmail(), studentDto.getFullName(), course.getTitle());
 		} catch (Exception ignored) {
 			// Enrollment should not fail due to email delivery issues.
 		}

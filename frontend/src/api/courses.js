@@ -13,6 +13,12 @@ export const getInstructorCourses = () =>
 export const getLessons = (courseId) =>
   axiosInstance.get(`/api/v1/courses/${courseId}/lessons`);
 
+export const getCourseReviews = (courseId) =>
+  axiosInstance.get(`/api/v1/courses/${courseId}/reviews`);
+
+export const submitCourseReview = (courseId, data) =>
+  axiosInstance.post(`/api/v1/courses/${courseId}/reviews`, data);
+
 // --- COURSE MANAGEMENT ---
 export const createCourse = (data) =>
   axiosInstance.post("/api/v1/courses", data);
@@ -32,11 +38,14 @@ export const uploadThumbnail = (id, file) => {
 };
 
 // --- LESSON MANAGEMENT ---
-export const createLesson = (data, file) => {
+export const createLesson = (data, file, materialFile) => {
   const formData = new FormData();
   formData.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }));
   if (file) {
     formData.append("file", file);
+  }
+  if (materialFile) {
+    formData.append("material", materialFile);
   }
   
   return axiosInstance.post("/api/v1/lessons", formData, {

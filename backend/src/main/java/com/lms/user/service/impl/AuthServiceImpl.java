@@ -54,8 +54,11 @@ public class AuthServiceImpl implements AuthService {
 		
 		LocalDateTime expiry = LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES);
 
+		Integer defaultCredits = request.getRole() == com.lms.user.vo.UserRole.STUDENT ? 1000 : 0;
+
 		User user = User.builder().fullName(request.getFullName()).email(request.getEmail())
 				.passwordHash(passwordEncoder.encode(request.getPassword())).role(request.getRole()).emailVerified(false)
+				.credits(defaultCredits)
 				.emailOtp(otp).emailOtpExpiresAt(expiry).build();
 		
 		User saved = userRepository.save(user);

@@ -441,7 +441,7 @@ const Index = () => {
                   </div>
                   <div className="border-t-2 border-dotted pt-3 flex justify-between items-center">
                     <h4 className="text-[#f37739] text-xl font-semibold">
-                      {course.price === 0 || !course.price ? "Free" : `₹${course.price}`}
+                      {course.price === 0 || !course.price ? "Free" : `${course.price} credits`}
                     </h4>
                     <span className="text-[#076dcd] font-medium text-sm">
                       View Course <i className="bi bi-arrow-up-right ps-1"></i>

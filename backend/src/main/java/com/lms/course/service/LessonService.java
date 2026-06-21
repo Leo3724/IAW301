@@ -9,12 +9,12 @@ import com.lms.course.dto.response.LessonResponseDto;
 import com.lms.course.entity.Lesson;
 
 public interface LessonService {
-	LessonResponseDto createLesson(Long instructorId, CreateLessonRequestDto request, MultipartFile file);
+	LessonResponseDto createLesson(Long instructorId, CreateLessonRequestDto request, MultipartFile file, MultipartFile material);
 
 	List<LessonResponseDto> getLessonsByCourse(Long courseId, Long userId, String role);
 
 	LessonResponseDto updateLesson(Long lessonId, Long instructorId, CreateLessonRequestDto request,
-			MultipartFile file);
+			MultipartFile file, MultipartFile material);
 
 	void deleteLesson(Long lessonId, Long instructorId);
 

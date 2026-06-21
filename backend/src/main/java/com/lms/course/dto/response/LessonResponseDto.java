@@ -17,4 +17,5 @@ public class LessonResponseDto {
 	private Integer orderIndex;
 	private Boolean isFreePreview;
 	private LocalDateTime createdAt;
+	private String materialUrl;
 }

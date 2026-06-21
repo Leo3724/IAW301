@@ -16,5 +16,6 @@ public class UserResponseDto {
     private UserStatus status;
     private String profilePic;
     private String bio;
+    private Integer credits;
     private LocalDateTime createdAt;
 }

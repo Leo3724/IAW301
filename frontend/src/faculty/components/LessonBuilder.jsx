@@ -16,6 +16,7 @@ const LessonBuilder = ({ courseId, isPublished }) => {
     durationSeconds: 0
   });
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
 
   const fetchLessons = useCallback(async () => {
     try {
@@ -48,9 +49,10 @@ const LessonBuilder = ({ courseId, isPublished }) => {
         courseId,
         ...lessonForm
       };
-      await createLesson(payload, selectedFile);
+      await createLesson(payload, selectedFile, selectedMaterial);
       // Reset form
       setSelectedFile(null);
+      setSelectedMaterial(null);
       setLessonForm(p => ({ ...p, title: "", durationSeconds: 0 }));
       setShowAddForm(false);
       // Refresh list
@@ -121,8 +123,13 @@ const LessonBuilder = ({ courseId, isPublished }) => {
               <input type="number" min="0" required value={lessonForm.durationSeconds} onChange={e => setLessonForm({...lessonForm, durationSeconds: Number(e.target.value)})} className="w-full text-sm p-2 border rounded" />
             </div>
             <div>
-              <label className="block text-xs font-semibold mb-1">Upload File (Max 15MB)</label>
+              <label className="block text-xs font-semibold mb-1">Upload Main Content (Video/Doc - Max 15MB)</label>
               <input type="file" required onChange={e => setSelectedFile(e.target.files[0])} className="w-full text-sm p-1.5 border rounded bg-white" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold mb-1">Upload Supplementary Material (Optional)</label>
+              <input type="file" onChange={e => setSelectedMaterial(e.target.files[0])} className="w-full text-sm p-1.5 border rounded bg-white" />
+              <p className="text-xs text-gray-500 mt-1">This file will be available for students to download.</p>
             </div>
           </div>
           <div className="flex justify-end pt-2">

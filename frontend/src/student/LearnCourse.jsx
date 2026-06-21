@@ -271,19 +271,17 @@ const LearnCourse = () => {
                   <button
                     key={lesson.id}
                     onClick={() => setActiveLesson(lesson)}
-                    className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors duration-200 cursor-pointer border-l-4 ${
-                      isActive
+                    className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors duration-200 cursor-pointer border-l-4 ${isActive
                         ? "bg-blue-50 border-[#076dcd]"
                         : "hover:bg-[#f3f9ff] border-transparent"
-                    }`}
+                      }`}
                   >
-                    <div className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                      completed
+                    <div className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${completed
                         ? "bg-[#18a54a] text-white"
                         : isActive
-                        ? "bg-[#076dcd] text-white"
-                        : "bg-gray-200 text-gray-500"
-                    }`}>
+                          ? "bg-[#076dcd] text-white"
+                          : "bg-gray-200 text-gray-500"
+                      }`}>
                       {completed ? <i className="bi bi-check-lg"></i> : idx + 1}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -330,6 +328,31 @@ const LearnCourse = () => {
                       <p className="text-sm text-[#576070] mt-1">
                         <i className="bi bi-clock me-1"></i>{formatDuration(activeLesson.durationSeconds)}
                       </p>
+                    )}
+                    {/* Link download video */}
+                    {activeLesson.contentUrl && (
+                      <a 
+                        href={activeLesson.contentUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download={`video_${activeLesson.id}.mp4`}
+                        className="inline-block mt-3 mr-3 text-sm text-[#076dcd] hover:text-[#222e48] transition-colors font-medium bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100"
+                      >
+                        <i className="bi bi-play-circle me-2"></i>Download Video
+                      </a>
+                    )}
+                    
+                    {/* Link download tài liệu phụ (Material) */}
+                    {activeLesson.materialUrl && (
+                      <a 
+                        href={activeLesson.materialUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="inline-block mt-3 text-sm text-[#f37739] hover:text-[#e06828] transition-colors font-medium bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-100"
+                      >
+                        <i className="bi bi-file-earmark-arrow-down me-2"></i>Download Material
+                      </a>
                     )}
                   </div>
                   {!isLessonCompleted(activeLesson.id) && (

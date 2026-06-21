@@ -68,7 +68,7 @@ const CourseMetadataForm = ({ course, onSave, isSaving, onUploadImage }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-[#222e48] mb-2">Price (₹)</label>
+            <label className="block text-sm font-semibold text-[#222e48] mb-2">Price (Credits)</label>
             <input 
               type="number" 
               name="price"
@@ -93,14 +93,21 @@ const CourseMetadataForm = ({ course, onSave, isSaving, onUploadImage }) => {
           </div>
           <div>
             <label className="block text-sm font-semibold text-[#222e48] mb-2">Category</label>
-            <input 
-              type="text" 
+            <select 
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-[#076dcd]" 
-              placeholder="e.g. Design, Web Dev"
-            />
+              className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-[#076dcd]"
+            >
+              <option value="">Select Category...</option>
+              <option value="Programming">Programming</option>
+              <option value="Dev">Dev</option>
+              <option value="Business">Business</option>
+              <option value="Web Dev">Web Dev</option>
+              <option value="Design">Design</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
         </div>
 

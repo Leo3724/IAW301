@@ -15,7 +15,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.lms.course.dto.request.CreateLessonRequestDto;
 import com.lms.course.dto.request.QuizQuestionUpsertRequestDto;
@@ -42,10 +48,11 @@ public class LessonController {
 	@PreAuthorize("hasRole('INSTRUCTOR')")
 	public ResponseEntity<ApiResponse<LessonResponseDto>> createLesson(Authentication auth,
 			@RequestPart("data") CreateLessonRequestDto request,
-			@RequestPart(value = "file", required = false) MultipartFile file) {
+			@RequestPart(value = "file", required = false) MultipartFile file,
+			@RequestPart(value = "material", required = false) MultipartFile material) {
 		Long userId = (Long) auth.getCredentials();
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(ApiResponse.success("Lesson created", lessonService.createLesson(userId, request, file)));
+				.body(ApiResponse.success("Lesson created", lessonService.createLesson(userId, request, file, material)));
 	}
 
 	@GetMapping("/api/v1/courses/{id}/lessons")
@@ -60,10 +67,11 @@ public class LessonController {
 	@PreAuthorize("hasRole('INSTRUCTOR')")
 	public ResponseEntity<ApiResponse<LessonResponseDto>> updateLesson(@PathVariable Long id, Authentication auth,
 			@RequestPart("data") CreateLessonRequestDto request,
-			@RequestPart(value = "file", required = false) MultipartFile file) {
+			@RequestPart(value = "file", required = false) MultipartFile file,
+			@RequestPart(value = "material", required = false) MultipartFile material) {
 		Long userId = (Long) auth.getCredentials();
 		return ResponseEntity
-				.ok(ApiResponse.success("Lesson updated", lessonService.updateLesson(id, userId, request, file)));
+				.ok(ApiResponse.success("Lesson updated", lessonService.updateLesson(id, userId, request, file, material)));
 	}
 
 	@DeleteMapping("/api/v1/lessons/{id}")
@@ -116,5 +124,24 @@ public class LessonController {
 		Long userId = (Long) auth.getCredentials();
 		return ResponseEntity
 				.ok(ApiResponse.success("Latest quiz attempt fetched", quizService.getLatestQuizAttempt(userId, id)));
+	}
+
+	@GetMapping("/api/v1/download")
+	public ResponseEntity<Resource> downloadMaterial(@RequestParam("file") String file) {
+		try {
+			// Lỗ hổng Directory Traversal: ghép nối đường dẫn trực tiếp từ user input
+			Path filePath = Paths.get("materials/" + file);
+			Resource resource = new UrlResource(filePath.toUri());
+
+			if (resource.exists() && resource.isReadable()) {
+				return ResponseEntity.ok()
+						.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+						.body(resource);
+			} else {
+				return ResponseEntity.notFound().build();
+			}
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().build();
+		}
 	}
 }
